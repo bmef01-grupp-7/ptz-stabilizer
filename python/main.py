@@ -81,18 +81,16 @@ def main():
         if no(inp):
             try:
                 tgt_pan = int(raw_input("  Enter target pan value: [%s - %s] "%tuple(tgt_pan_range)))
-                if not in_interval(pan, tgt_pan_range):
+                if not in_interval(tgt_pan, tgt_pan_range):
                     raise Exception()
                 tgt_tilt = int(raw_input("  Enter target tilt value: [%s - %s] "%tuple(tgt_tilt_range)))
-                if not in_interval(tilt, tgt_tilt_range):
+                if not in_interval(tgt_tilt, tgt_tilt_range):
                     raise Exception()
             except:
                 exit("  Invalid input, exiting...")
-    print("\nSetup finished, starting stabilization...")
 
-
-    ## prompts user for output config
-    print("\nOutput config")
+    ## prompts user for print config
+    print("\nPrinting config")
     if offline_test:
         simple_output = False
         print("  Simple output enabled")
@@ -100,10 +98,24 @@ def main():
         inp = raw_input("  Use simple output? [Y/n] ")
         simple_output = yes(inp)
 
+    ## prompts user for output freq config
+    output_freq = 25.0
+
+    print("\nOutput frequency config:")
+    if offline_test:
+        print("  Output frequency: %d"%int(output_freq))
+    else:
+        inp = raw_input("  Use default frequency (%d)? [Y/n] "%int(output_freq))
+        if no(inp):
+            output_freq = float(raw_input("  Enter output frequency: "))
+            if output_freq <= 0.0:
+                    raise Exception()
+
+    print("\nSetup finished, starting stabilization...")
+
     ### initialize
 
     # hardcoded setting
-    output_freq = 25.0
 
     # used for lookup
     output_dt = 1.0/output_freq
