@@ -90,6 +90,16 @@ def main():
                 exit("  Invalid input, exiting...")
     print("\nSetup finished, starting stabilization...")
 
+
+    ## prompts user for output config
+    print("\nOutput config")
+    if offline_test:
+        simple_output = False
+        print("  Simple output enabled")
+    else:
+        inp = raw_input("  Use simple output? [Y/n] ")
+        simple_output = yes(inp)
+
     ### initialize
 
     # hardcoded setting
@@ -170,49 +180,54 @@ def main():
                 c.move(pan, tilt, cam_dt)
 
             # calculate diagnostic data
-            acc_f_data = \
-                map(round_to_int, cur_avg_min(f.acc_f_buf))
-            gyro_f_data = \
-                map(round_to_int, cur_avg_min(f.gyro_f_buf))
             out_f_data = \
                 map(round_to_int, [output_freq]+cur_avg_min(out_f_buf))
-            fus_t_data = \
-                [int(x*1.0e6) for x in [avg(fuse_t_buf), max(fuse_t_buf)]]
-            rot_t_data = \
-                [int(x*1.0e6) for x in [avg(rot_t_buf), max(rot_t_buf)]]
-            out_t_data = \
-                [int(x*1.0e6) for x in [avg(out_t_buf), max(out_t_buf)]]
-            excs = \
-                [str(x) for x in exc_buf if x]
-            x, y, z = \
-                map(degrees, angles)
 
-            clear_console()
-            print("\n".join([
-                ascii_art+"\n",
-                "serial: %s"%port,
-                "camera: %s"%(ip if camera_control else "disabled"),
-                "target:",
-                "  pan:  %3d"%tgt_pan,
-                "  tilt: %3d"%tgt_tilt,
-                "freq [hz]:",
-                "  acc       cur avg min:     {:3d} {:3d} {:3d}".format(*acc_f_data),
-                "  gyro      cur avg min:     {:3d} {:3d} {:3d}".format(*gyro_f_data),
-                "  out   tgt cur avg min: {:3d} {:3d} {:3d} {:3d}".format(*out_f_data),
-                "time [us]:",
-                "  fus  avg max: {:5d} {:5d}".format(*fus_t_data),
-                "  rot  avg max: {:5d} {:5d}".format(*rot_t_data),
-                "  out  avg max: {:5d} {:5d}".format(*out_t_data),
-                "status:\n  " + (excs[0] if excs else "ok"),
-                "",
-                "pan tilt:",
-                nice_format_list_of_float([pan, tilt]),
-                "",
-                "fusion data:",
-                nice_format_list_of_float(map(degrees, angles)),
-                visualize_2d(x, y, 90, 4),
-                visualize_1d(z, 90, 4)
-            ]))
+            if not simple_output:
+                acc_f_data = \
+                    map(round_to_int, cur_avg_min(f.acc_f_buf))
+                gyro_f_data = \
+                    map(round_to_int, cur_avg_min(f.gyro_f_buf))
+                fus_t_data = \
+                    [int(x*1.0e6) for x in [avg(fuse_t_buf), max(fuse_t_buf)]]
+                rot_t_data = \
+                    [int(x*1.0e6) for x in [avg(rot_t_buf), max(rot_t_buf)]]
+                out_t_data = \
+                    [int(x*1.0e6) for x in [avg(out_t_buf), max(out_t_buf)]]
+                excs = \
+                    [str(x) for x in exc_buf if x]
+                x, y, z = \
+                    map(degrees, angles)
+
+            if simple_output:
+                print("out tgt cur avg min: {:3d} {:3d} {:3d} {:3d}".format(*out_f_data))
+            else:
+                clear_console()
+                print("\n".join([
+                    ascii_art+"\n",
+                    "serial: %s"%port,
+                    "camera: %s"%(ip if camera_control else "disabled"),
+                    "target:",
+                    "  pan:  %3d"%tgt_pan,
+                    "  tilt: %3d"%tgt_tilt,
+                    "freq [hz]:",
+                    "  acc       cur avg min:     {:3d} {:3d} {:3d}".format(*acc_f_data),
+                    "  gyro      cur avg min:     {:3d} {:3d} {:3d}".format(*gyro_f_data),
+                    "  out   tgt cur avg min: {:3d} {:3d} {:3d} {:3d}".format(*out_f_data),
+                    "time [us]:",
+                    "  fus  avg max: {:5d} {:5d}".format(*fus_t_data),
+                    "  rot  avg max: {:5d} {:5d}".format(*rot_t_data),
+                    "  out  avg max: {:5d} {:5d}".format(*out_t_data),
+                    "status:\n  " + (excs[0] if excs else "ok"),
+                    "",
+                    "pan tilt:",
+                    nice_format_list_of_float([pan, tilt]),
+                    "",
+                    "fusion data:",
+                    nice_format_list_of_float(map(degrees, angles)),
+                    visualize_2d(x, y, 90, 4),
+                    visualize_1d(z, 90, 4)
+                ]))
 
             pp(now() - t, out_t_buf)
 

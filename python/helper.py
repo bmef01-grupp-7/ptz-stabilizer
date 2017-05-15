@@ -72,7 +72,8 @@ def round_to_int(x):
     clears the console, independent of os
 """
 def clear_console():
-    os.system("cls" if os.name == "nt" else "clear")
+    for _ in range(100): print("") # the stupid but fast way
+    # os.system("cls" if os.name == "nt" else "clear")
 
 """
     serial ports
